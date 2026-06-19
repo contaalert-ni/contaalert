@@ -1,1 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContaAlert | Dashboard</title>
+<style>
+  :root{
+    --bg:#0B1220;
+    --panel:#121B2E;
+    --panel-2:#0F1828;
+    --border:#1E2A40;
+    --text:#E8EDF6;
+    --text-dim:#8B9AB3;
+    --blue:#185FA5;
+    --blue-light:#4A9FE0;
+    --red:#E24B4A;
+    --amber:#EF9F27;
+    --green:#1D9E75;
+    --red-bg:rgba(226,75,74,0.12);
+    --amber-bg:rgba(239,159,39,0.12);
+    --green-bg:rgba(29,158,117,0.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    min-height:100vh;
+  }
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 24px;border-bottom:1px solid var(--border);
+    background:var(--panel-2);
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600}
+  .logo-icon{
+    width:32px;height:32px;border-radius:8px;background:var(--blue);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;
+  }
+  .badge-live{
+    font-size:11px;background:var(--red-bg);color:var(--red);
+    padding:3px 10px;border-radius:20px;font-weight:600;
+    display:flex;align-items:center;gap:5px;
+  }
+  .dot-pulse{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.5s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .topbar-right{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--text-dim)}
+  .refresh-btn{
+    background:var(--panel);border:1px solid var(--border);color:var(--text);
+    padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;
+    display:flex;align-items:center;gap:6px;
+  }
+  .refresh-btn:hover{border-color:var(--blue-light)}
+  .main{max-width:1200px;margin:0 auto;padding:24px}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+  @media(max-width:800px){.metrics{grid-template-columns:repeat(2,1fr)}}
+  .metric-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:18px;
+  }
+  .metric-label{font-size:12px;color:var(--text-dim);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .metric-value{font-size:28px;font-weight:700}
+  .metric-sub{font-size:11px;margin-top:6px;color:var(--text-dim)}
+  .two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:16px}
+  @media(max-width:900px){.two-col{grid-template-columns:1fr}}
+  .panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:18px;
+  }
+  .panel-title{
+    font-size:12px;font-weight:600;color:var(--text-dim);
+    text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .alert-item{
+    display:flex;align-items:flex-start;gap:10px;padding:11px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .alert-item:last-child{border-bottom:none;padding-bottom:0}
+  .alert-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0}
+  .dot-red{background:var(--red)}
+  .dot-amber{background:var(--amber)}
+  .dot-green{background:var(--green)}
+  .alert-body{flex:1;min-width:0}
+  .alert-title{font-size:13px;font-weight:500;color:var(--text)}
+  .alert-desc{font-size:12px;color:var(--text-dim);margin-top:2px}
+  .alert-time{font-size:11px;color:var(--text-dim);margin-top:4px;opacity:.7}
+  .alert-badge{
+    font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;
+    white-space:nowrap;flex-shrink:0;margin-top:2px;
+  }
+  .badge-red{background:var(--red-bg);color:var(--red)}
+  .badge-amber{background:var(--amber-bg);color:var(--amber)}
+  .badge-green{background:var(--green-bg);color:var(--green)}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .bar-label{font-size:12px;color:var(--text-dim);width:100px;flex-shrink:0}
+  .bar-track{flex:1;height:10px;background:var(--panel-2);border-radius:5px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:5px;transition:width .6s ease}
+  .bar-val{font-size:12px;font-weight:600;width:60px;text-align:right}
+  .risk-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+  .risk-row:last-child{border-bottom:none}
+  .risk-name{font-size:13px;color:var(--text)}
+  .risk-bar-wrap{flex:1;margin:0 14px;height:7px;background:var(--panel-2);border-radius:4px;overflow:hidden}
+  .risk-pct{font-size:12px;font-weight:600;width:40px;text-align:right}
+  .empty-state{padding:30px 0;text-align:center;color:var(--text-dim);font-size:13px}
+  .loading{padding:30px;text-align:center;color:var(--text-dim);font-size:13px}
+  .footer-note{
+    text-align:center;padding:18px;color:var(--text-dim);font-size:11px;
+    border-top:1px solid var(--border);margin-top:8px;
+  }
+</style>
+</head>
+<body>
 
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">CA</div>
+    ContaAlert
+  </div>
+  <span class="badge-live"><span class="dot-pulse"></span> En vivo</span>
+  <div class="topbar-right">
+    <button class="refresh-btn" onclick="cargarDatos()">↻ Actualizar</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="metrics" id="metrics">
+    <div class="metric-card"><div class="loading">Cargando...</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">Alertas recientes</div>
+      <div id="alertList"><div class="loading">Cargando alertas...</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Gastos por categoría</div>
+      <div id="gastosBars"><div class="loading">Cargando...</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Nivel de riesgo por área</div>
+    <div id="riskList"><div class="loading">Calculando...</div></div>
+  </div>
+
+  <div class="footer-note">ContaAlert · Datos sincronizados con Google Sheets</div>
+
+</div>
+
+<script>
+// ═══ CONFIGURACIÓN — ID de tu Google Sheets ═══
+const SHEET_ID = "1CvWpJOKMVzPUprpUG0a2RDvtgoQal9oPJ7T3_ibdn9w";
+
+function gvizUrl(hoja) {
+  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(hoja)}`;
+}
+
+async function fetchSheet(hoja) {
+  const res = await fetch(gvizUrl(hoja));
+  const text = await res.text();
+  const json = JSON.parse(text.substring(47, text.length - 2));
+  const cols = json.table.cols.map(c => c.label);
+  const rows = json.table.rows.map(r => {
+    const obj = {};
+    r.c.forEach((cell, i) => {
+      obj[cols[i] || i] = cell ? (cell.f || cell.v) : "";
+    });
+    return obj;
+  });
+  return rows;
+}
+
+function colorNivel(nivel) {
+  if (nivel === "CRITICO") return { dot: "dot-red", badge: "badge-red", bar: "var(--red)" };
+  if (nivel === "ADVERTENCIA") return { dot: "dot-amber", badge: "badge-amber", bar: "var(--amber)" };
+  return { dot: "dot-green", badge: "badge-green", bar: "var(--green)" };
+}
+
+function tiempoRelativo(fecha) {
+  try {
+    const d = new Date(fecha);
+    const diffMin = Math.floor((new Date() - d) / 60000);
+    if (diffMin < 1) return "Justo ahora";
+    if (diffMin < 60) return `Hace ${diffMin} min`;
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return `Hace ${diffH} h`;
+    const diffD = Math.floor(diffH / 24);
+    return `Hace ${diffD} día${diffD > 1 ? "s" : ""}`;
+  } catch (e) { return fecha; }
+}
+
+async function cargarDatos() {
+  try {
+    const [alertas, movimientos] = await Promise.all([
+      fetchSheet("Alertas"),
+      fetchSheet("Movimientos")
+    ]);
+
+    renderMetrics(alertas, movimientos);
+    renderAlertas(alertas);
+    renderGastos(movimientos);
+    renderRiesgo(alertas);
+
+  } catch (err) {
+    document.getElementById("metrics").innerHTML =
+      `<div class="metric-card" style="grid-column:1/-1"><div class="empty-state">No se pudieron cargar los datos. Verifica que el Google Sheets esté compartido como "Cualquier persona con el enlace puede ver".</div></div>`;
+    console.error(err);
+  }
+}
+
+function renderMetrics(alertas, movimientos) {
+  const criticos = alertas.filter(a => a.Nivel === "CRITICO").length;
+  const advertencias = alertas.filter(a => a.Nivel === "ADVERTENCIA").length;
+  const totalAlertas = criticos + advertencias;
+  const totalMovs = movimientos.length;
+
+  const ultimaAlerta = alertas.length ? alertas[alertas.length - 1] : null;
+
+  document.getElementById("metrics").innerHTML = `
+    <div class="metric-card">
+      <div class="metric-label">⚠ Alertas activas</div>
+      <div class="metric-value" style="color:var(--red)">${totalAlertas}</div>
+      <div class="metric-sub">${criticos} críticas · ${advertencias} advertencias</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">📋 Movimientos registrados</div>
+      <div class="metric-value">${totalMovs}</div>
+      <div class="metric-sub">Total histórico</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">🔴 Última alerta crítica</div>
+      <div class="metric-value" style="font-size:16px;font-weight:600">${ultimaAlerta ? ultimaAlerta.Nivel : "—"}</div>
+      <div class="metric-sub">${ultimaAlerta ? tiempoRelativo(ultimaAlerta.Fecha) : "Sin alertas"}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">✅ Estado general</div>
+      <div class="metric-value" style="color:${criticos > 0 ? 'var(--red)' : 'var(--green)'}">${criticos > 0 ? "Revisar" : "Estable"}</div>
+      <div class="metric-sub">${criticos > 0 ? "Hay alertas críticas pendientes" : "Sin riesgos críticos"}</div>
+    </div>
+  `;
+}
+
+function renderAlertas(alertas) {
+  if (!alertas.length) {
+    document.getElementById("alertList").innerHTML = `<div class="empty-state">Aún no hay alertas registradas</div>`;
+    return;
+  }
+  const recientes = alertas.slice(-8).reverse();
+  document.getElementById("alertList").innerHTML = recientes.map(a => {
+    const c = colorNivel(a.Nivel);
+    return `
+      <div class="alert-item">
+        <div class="alert-dot ${c.dot}"></div>
+        <div class="alert-body">
+          <div class="alert-title">${a.Mensaje || "Alerta"}</div>
+          <div class="alert-desc">${a.Correo || ""} · ${a.Regla || ""}</div>
+          <div class="alert-time">${tiempoRelativo(a.Fecha)}</div>
+        </div>
+        <div class="alert-badge ${c.badge}">${a.Nivel}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderGastos(movimientos) {
+  const gastos = movimientos.filter(m => (m.Tipo || "").toLowerCase() === "gasto");
+  if (!gastos.length) {
+    document.getElementById("gastosBars").innerHTML = `<div class="empty-state">Aún no hay gastos registrados</div>`;
+    return;
+  }
+
+  const porCategoria = {};
+  gastos.forEach(g => {
+    const cat = g.Categoria || "Otros";
+    const monto = parseFloat(g.Monto) || 0;
+    porCategoria[cat] = (porCategoria[cat] || 0) + monto;
+  });
+
+  const max = Math.max(...Object.values(porCategoria));
+  const colores = ["var(--red)", "var(--amber)", "var(--blue-light)", "var(--green)", "#888"];
+
+  document.getElementById("gastosBars").innerHTML = Object.entries(porCategoria)
+    .sort((a, b) => b[1] - a[1])
+    .map(([cat, monto], i) => `
+      <div class="bar-row">
+        <div class="bar-label">${cat}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(monto/max*100).toFixed(0)}%;background:${colores[i % colores.length]}"></div></div>
+        <div class="bar-val">C$${monto.toLocaleString()}</div>
+      </div>
+    `).join("");
+}
+
+function renderRiesgo(alertas) {
+  if (!alertas.length) {
+    document.getElementById("riskList").innerHTML = `<div class="empty-state">Sin datos suficientes para calcular riesgo</div>`;
+    return;
+  }
+
+  const areas = {};
+  alertas.forEach(a => {
+    const regla = (a.Regla || "Otros").replace(/Regla \d+ - /i, "");
+    if (!areas[regla]) areas[regla] = { criticos: 0, total: 0 };
+    areas[regla].total++;
+    if (a.Nivel === "CRITICO") areas[regla].criticos++;
+  });
+
+  document.getElementById("riskList").innerHTML = Object.entries(areas).map(([area, d]) => {
+    const pct = Math.round((d.criticos / d.total) * 100) || 0;
+    const color = pct >= 60 ? "var(--red)" : pct >= 30 ? "var(--amber)" : "var(--green)";
+    return `
+      <div class="risk-row">
+        <div class="risk-name">${area}</div>
+        <div class="risk-bar-wrap"><div style="height:100%;width:${pct}%;background:${color};border-radius:4px"></div></div>
+        <div class="risk-pct" style="color:${color}">${pct}%</div>
+      </div>
+    `;
+  }).join("");
+}
+
+cargarDatos();
+setInterval(cargarDatos, 30000); // Actualiza cada 30 segundos
+</script>
+
+</body>
+</html>
